@@ -2,14 +2,12 @@
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
     integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-  <!-- <link rel="stylesheet" href="dashboardCss.css"> -->
 
   <title>Vargi Bot</title>
 
@@ -53,6 +51,18 @@
       font-size: xx-large;
       color: rgb(17, 15, 15);
       font-size: 10px;
+
+    }
+
+    .info_box {
+      position: relative;
+      position: fixed;
+      border-radius: 10px;
+      z-index: 999;
+      height: 90px;
+      width: 150px;
+      transform:translateX(100px);
+      background: rgb(255, 255, 255);
 
     }
   </style>
@@ -160,10 +170,16 @@
 
     <div id="dashboard" class="container-fluid">
       <div style="background-color: rgb(156, 159, 161);" class="row">
-        <div class="col-sm-12 col-md-6 col-lg-6">
-          <h2 style="padding-top: 20px;" class="text-center">Incoming Orders</h2>
-          <div id="map" style="height: 380px;border-style: solid;" class="m-4 shadow-lg mb-5 bg-white rounded"></div>
+        <div class="col-sm-12 col-md-6 col-lg-6 position-relative">
+          <h2 style="padding-top: 20px; padding-bottom: 18px;" class="text-center">Incoming Orders</h2>
+        
+            <div id="map" style="height: 377px;width: auto; border-style: solid; " class="m-4" >
+              
+            <div class="info_box" >Text</div>
+          </div>
+
         </div>
+
         <div class="col-sm-12 col-md-6 col-lg-6">
           <h2 style="padding-top: 20px;" class="text-center">Order Processing Time</h2>
           <div id="column_chart" style=" height: 380px;border-style: solid;"
@@ -196,7 +212,6 @@
       </div>
     </div>
   </div>
-
 
 
   <div class="container-fluid">
@@ -280,6 +295,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
   <script>
+
     /////////////Ajax Requests////////////
     $(document).ready(function () {
       // Fetch the initial Map
@@ -303,65 +319,70 @@
         container._leaflet_id = null;
       }
 
-      var jsonDataObject = [];
+      const spreadsheetId = '1BK_VUXDRxHH5oz-NsDczh7OLkVFCcrGdl09g28D-d_8'
+      fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=Dashboard`)
+          .then(res => res.text())
+          .then(text => {
+        const json = JSON.parse(text.substr(47).slice(0, -2))
 
-      $.getJSON('https://spreadsheets.google.com/feeds/list/1Mwq0p_xGAfNjDStlrIZpSGYfa-lUPLr7j79-OST82Zk/5/public/full?alt=json', function (data) {
-        for (var i = 0; i < data.feed.entry.length; ++i) {
+        
+        var jsonDataObject = [];
 
+        for (var i = 0; i <= 8; i++) {
           var json_data = {
-            "City": data.feed.entry[i].gsx$city.$t,
-            "OderID": data.feed.entry[i].gsx$orderid.$t,
-            "Item": data.feed.entry[i].gsx$item.$t,
-            "Latitude": parseFloat(data.feed.entry[i].gsx$latitude.$t),
-            "Longitude": parseFloat(data.feed.entry[i].gsx$longitude.$t),
-            "Dispatched": data.feed.entry[i].gsx$orderdispatched.$t,
-            "Shipped": data.feed.entry[i].gsx$ordershipped.$t
+            "City": json["table"]["rows"][i]["c"][6]["v"] ,
+            "OderID": json["table"]["rows"][i]["c"][2]["v"],
+            "Item": json["table"]["rows"][i]["c"][3]["v"],
+            "Latitude": parseFloat(json["table"]["rows"][i]["c"][8]["v"]),
+            "Longitude": parseFloat(json["table"]["rows"][i]["c"][7]["v"]),
+            "Dispatched": json["table"]["rows"][i]["c"][9]["v"],
+            "Shipped": json["table"]["rows"][i]["c"][10]["v"]
           };
           jsonDataObject.push(json_data);
+        }
 
-          for (var j = 0; j < jsonDataObject.length; j++) {
 
-            if (jsonDataObject[j].Dispatched == "YES" && jsonDataObject[j].Shipped == "YES") {
-              var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/green-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
-            } else if (jsonDataObject[j].Dispatched == "NO" && jsonDataObject[j].Shipped == "NO") {
-              var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/red-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
-            } else {
-              var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/gold-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
-            }
+        // Map section
+        for (var j = 0; j < jsonDataObject.length; j++) {
 
-            var icon = L.icon({
-              iconUrl: url,
-              iconSize: [33, 30]
-            });
-
-            var marker = L.marker(L.latLng(parseFloat(jsonDataObject[j].Latitude + 0.09), parseFloat(jsonDataObject[j].Longitude)), { icon });
-            marker.myJsonData = jsonDataObject[j];
-            marker.bindPopup((`<div>
-                                <h4>City: ${marker.myJsonData.City}</h4>
-                                <p>Order ID: ${marker.myJsonData.OderID} <br> 
-                                  Item: ${marker.myJsonData.Item} <br>
-                                  Dispatched: ${marker.myJsonData.Dispatched} <br>
-                                  Shipped: ${marker.myJsonData.Shipped}
-                                  </p>
-                                </div>`), { closeButton: false, offset: L.point(0, -3) });
-            map.addLayer(marker);
-            marker.myJsonData = jsonDataObject[j];
-
+          if (jsonDataObject[j].Dispatched == "YES" && jsonDataObject[j].Shipped == "YES") {
+            var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/green-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
+          } else if (jsonDataObject[j].Dispatched == "NO" && jsonDataObject[j].Shipped == "NO") {
+            var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/red-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
+          } else {
+            var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/gold-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
           }
+
+          // Add icon section
+          var icon = L.icon({ iconUrl: url, iconSize: [33, 30] });
+          var marker = L.marker(L.latLng(parseFloat(jsonDataObject[j].Latitude + 0.09), parseFloat(jsonDataObject[j].Longitude)), { icon });
+
+          marker.myJsonData = jsonDataObject[j];
+          marker.bindPopup((`<div>
+                              <h4>City: ${marker.myJsonData.City}</h4>
+                              <p>Order ID: ${marker.myJsonData.OderID} <br> 
+                                Item: ${marker.myJsonData.Item} <br>
+                                Dispatched: ${marker.myJsonData.Dispatched} <br>
+                                Shipped: ${marker.myJsonData.Shipped}
+                              </p>
+                            </div>`), { closeButton: false, offset: L.point(0, -3) });
+          map.addLayer(marker);
         }
 
         var carJsonDataObject = [];
         var graph_arr = [['Order ID', 'Time Taken', { role: 'style' }]];
         var bar_color = [];
 
-        for (var i = 0; i < data.feed.entry.length; ++i) {
+        for (var i = 0; i <=8 ; i++) {
           var chartJson_data = {
-            "OderID": data.feed.entry[i].gsx$orderid.$t,
-            "TimeTaken": parseFloat(data.feed.entry[i].gsx$timetaken.$t),
-            "Priority": data.feed.entry[i].gsx$priority.$t
+            "OderID": json["table"]["rows"][i]["c"][2]["f"],
+            "TimeTaken": parseFloat(json["table"]["rows"][i]["c"][14]["v"]),
+            "Priority": json["table"]["rows"][i]["c"][4]["v"]
           };
           carJsonDataObject.push(chartJson_data);
         };
+
+
         // Setting color for the coloumns of graph according to priority of items
         for (var j in carJsonDataObject) {
           if (carJsonDataObject[j].Priority == 'HP') {
@@ -380,9 +401,10 @@
         for (var j in carJsonDataObject) {
           graph_arr.push([carJsonDataObject[j].OderID, carJsonDataObject[j].TimeTaken, bar_color[j]]);
         }
+
         var graphArray_Final = google.visualization.arrayToDataTable(graph_arr);
 
-        var chardata = new google.visualization.DataView(graphArray_Final);
+        var chart_data = new google.visualization.DataView(graphArray_Final);
 
         var options = {
           title: 'Time Taken for items to be Shipped',
@@ -391,27 +413,26 @@
           legend: { position: "none" },
         };
         var chart = new google.visualization.ColumnChart(document.getElementById('column_chart'));
-        chart.draw(chardata, options);
+        chart.draw(chart_data, options);
 
         var trHTML = '';
-        for (var i = 0; i < data.feed.entry.length; ++i) {
+        for (var i = 0; i <=8 ; ++i) {
           var num = i + 1
           var myData_map, myData_order;
 
           trHTML += '<tr><th scope="row">' + num +
-            '</th><td>' + data.feed.entry[i].gsx$teamid.$t +
-            '</td><td>' + data.feed.entry[i].gsx$uniqueid.$t +
-            '</td><td>' + data.feed.entry[i].gsx$orderid.$t +
-            '</td><td>' + data.feed.entry[i].gsx$item.$t +
-            '</td><td>' + data.feed.entry[i].gsx$priority.$t +
-            '</td><td>' + data.feed.entry[i].gsx$quantity.$t +
-            '</td><td>' + data.feed.entry[i].gsx$city.$t +
-            '</td><td>' + data.feed.entry[i].gsx$orderdispatched.$t +
-            '</td><td>' + data.feed.entry[i].gsx$ordershipped.$t +
+            '</th><td>' + json["table"]["rows"][i]["c"][0]["v"] +
+            '</td><td>' + json["table"]["rows"][i]["c"][1]["v"] +
+            '</td><td>' + json["table"]["rows"][i]["c"][2]["v"] +
+            '</td><td>' + json["table"]["rows"][i]["c"][3]["v"] +
+            '</td><td>' + json["table"]["rows"][i]["c"][4]["v"] +
+            '</td><td>' + json["table"]["rows"][i]["c"][5]["v"] +
+            '</td><td>' + json["table"]["rows"][i]["c"][6]["v"] +
+            '</td><td>' + json["table"]["rows"][i]["c"][9]["v"] +
+            '</td><td>' + json["table"]["rows"][i]["c"][10]["v"] +
             '</td></tr>'
             ;
         }
-        console.log(trHTML);
         $('#tableContent').html(trHTML);
         var trHTML = '';
 
