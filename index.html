@@ -61,7 +61,7 @@
       z-index: 999;
       height: 90px;
       width: 150px;
-      transform:translateX(100px);
+      transform: translateX(100px);
       background: rgb(255, 255, 255);
 
     }
@@ -172,9 +172,9 @@
       <div style="background-color: rgb(156, 159, 161);" class="row">
         <div class="col-sm-12 col-md-6 col-lg-6 position-relative">
           <h2 style="padding-top: 20px; padding-bottom: 18px;" class="text-center">Incoming Orders</h2>
-        
-            <div id="map" style="height: 377px;width: auto; border-style: solid; " class="m-4" >
-              
+
+          <div id="map" style="height: 377px;width: auto; border-style: solid; " class="m-4">
+
           </div>
 
         </div>
@@ -296,7 +296,7 @@
   <script>
 
     /////////////Ajax Requests////////////
-    $(document).ready(function () {
+    $(document).ready(() => {
       // Fetch the initial Map
       refreshData();
 
@@ -320,44 +320,44 @@
 
       const spreadsheetId = '1BK_VUXDRxHH5oz-NsDczh7OLkVFCcrGdl09g28D-d_8'
       fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=Dashboard`)
-          .then(res => res.text())
-          .then(text => {
-        const json = JSON.parse(text.substr(47).slice(0, -2))
+        .then(res => res.text())
+        .then(text => {
+          const json = JSON.parse(text.substr(47).slice(0, -2))
 
-        
-        var jsonDataObject = [];
+          let count = json["table"]["rows"].length;
+          var jsonDataObject = [];
 
-        for (var i = 0; i <= 8; i++) {
-          var json_data = {
-            "City": json["table"]["rows"][i]["c"][6]["v"] ,
-            "OderID": json["table"]["rows"][i]["c"][2]["v"],
-            "Item": json["table"]["rows"][i]["c"][3]["v"],
-            "Latitude": parseFloat(json["table"]["rows"][i]["c"][8]["v"]),
-            "Longitude": parseFloat(json["table"]["rows"][i]["c"][7]["v"]),
-            "Dispatched": json["table"]["rows"][i]["c"][9]["v"],
-            "Shipped": json["table"]["rows"][i]["c"][10]["v"]
-          };
-          jsonDataObject.push(json_data);
-        }
-
-
-        // Map section
-        for (var j = 0; j < jsonDataObject.length; j++) {
-
-          if (jsonDataObject[j].Dispatched == "YES" && jsonDataObject[j].Shipped == "YES") {
-            var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/green-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
-          } else if (jsonDataObject[j].Dispatched == "NO" && jsonDataObject[j].Shipped == "NO") {
-            var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/red-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
-          } else {
-            var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/gold-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
+          for (var i = 0; i < count; i++) {
+            var json_data = {
+              "City": json["table"]["rows"][i]["c"][6]["v"],
+              "OderID": json["table"]["rows"][i]["c"][2]["v"],
+              "Item": json["table"]["rows"][i]["c"][3]["v"],
+              "Latitude": parseFloat(json["table"]["rows"][i]["c"][8]["v"]),
+              "Longitude": parseFloat(json["table"]["rows"][i]["c"][7]["v"]),
+              "Dispatched": json["table"]["rows"][i]["c"][9]["v"],
+              "Shipped": json["table"]["rows"][i]["c"][10]["v"]
+            };
+            jsonDataObject.push(json_data);
           }
 
-          // Add icon section
-          var icon = L.icon({ iconUrl: url, iconSize: [33, 30] });
-          var marker = L.marker(L.latLng(parseFloat(jsonDataObject[j].Latitude + 0.09), parseFloat(jsonDataObject[j].Longitude)), { icon });
 
-          marker.myJsonData = jsonDataObject[j];
-          marker.bindPopup((`<div>
+          // Map section
+          for (var j = 0; j < jsonDataObject.length; j++) {
+
+            if (jsonDataObject[j].Dispatched == "YES" && jsonDataObject[j].Shipped == "YES") {
+              var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/green-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
+            } else if (jsonDataObject[j].Dispatched == "NO" && jsonDataObject[j].Shipped == "NO") {
+              var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/red-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
+            } else {
+              var url = "https://raw.githubusercontent.com/rakshit3549/eyrcWebDashboard/main/1x/gold-marker.png?token=AHUOKZA5Q6SJG7SEBY6CCMTAF7KHA"
+            }
+
+            // Add icon section
+            var icon = L.icon({ iconUrl: url, iconSize: [33, 30] });
+            var marker = L.marker(L.latLng(parseFloat(jsonDataObject[j].Latitude + 0.09), parseFloat(jsonDataObject[j].Longitude)), { icon });
+
+            marker.myJsonData = jsonDataObject[j];
+            marker.bindPopup((`<div>
                               <h4>City: ${marker.myJsonData.City}</h4>
                               <p>Order ID: ${marker.myJsonData.OderID} <br> 
                                 Item: ${marker.myJsonData.Item} <br>
@@ -365,77 +365,77 @@
                                 Shipped: ${marker.myJsonData.Shipped}
                               </p>
                             </div>`), { closeButton: false, offset: L.point(0, -3) });
-          map.addLayer(marker);
-        }
+            map.addLayer(marker);
+          }
 
-        var carJsonDataObject = [];
-        var graph_arr = [['Order ID', 'Time Taken', { role: 'style' }]];
-        var bar_color = [];
+          var carJsonDataObject = [];
+          var graph_arr = [['Order ID', 'Time Taken', { role: 'style' }]];
+          var bar_color = [];
 
-        for (var i = 0; i <=8 ; i++) {
-          var chartJson_data = {
-            "OderID": json["table"]["rows"][i]["c"][2]["f"],
-            "TimeTaken": parseFloat(json["table"]["rows"][i]["c"][14]["v"]),
-            "Priority": json["table"]["rows"][i]["c"][4]["v"]
+          for (var i = 0; i < count; i++) {
+            var chartJson_data = {
+              "OderID": json["table"]["rows"][i]["c"][2]["f"],
+              "TimeTaken": parseFloat(json["table"]["rows"][i]["c"][14]["v"]),
+              "Priority": json["table"]["rows"][i]["c"][4]["v"]
+            };
+            carJsonDataObject.push(chartJson_data);
           };
-          carJsonDataObject.push(chartJson_data);
-        };
 
 
-        // Setting color for the coloumns of graph according to priority of items
-        for (var j in carJsonDataObject) {
-          if (carJsonDataObject[j].Priority == 'HP') {
-            var color = '#e60000';
+          // Setting color for the coloumns of graph according to priority of items
+          for (var j in carJsonDataObject) {
+            if (carJsonDataObject[j].Priority == 'HP') {
+              var color = '#e60000';
+            }
+            else if (carJsonDataObject[j].Priority == 'MP') {
+              var color = '#f4f42a';
+            }
+            else if (carJsonDataObject[j].Priority == 'LP') {
+              var color = '#00FF00';
+            }
+            bar_color.push(color)
           }
-          else if (carJsonDataObject[j].Priority == 'MP') {
-            var color = '#f4f42a';
+
+          // Converting Json Object to JavaScript Array
+          for (var j in carJsonDataObject) {
+            graph_arr.push([carJsonDataObject[j].OderID, carJsonDataObject[j].TimeTaken, bar_color[j]]);
           }
-          else if (carJsonDataObject[j].Priority == 'LP') {
-            var color = '#00FF00';
+
+          var graphArray_Final = google.visualization.arrayToDataTable(graph_arr);
+
+          var chart_data = new google.visualization.DataView(graphArray_Final);
+
+          var options = {
+            title: 'Time Taken for items to be Shipped',
+            hAxis: { title: 'Order ID' },
+            vAxis: { title: 'Time Taken (s)' },
+            legend: { position: "none" },
+          };
+          var chart = new google.visualization.ColumnChart(document.getElementById('column_chart'));
+          chart.draw(chart_data, options);
+
+          var trHTML = '';
+          for (var i = 0; i < count; ++i) {
+            var num = i + 1
+            var myData_map, myData_order;
+
+            trHTML += '<tr><th scope="row">' + num +
+              '</th><td>' + json["table"]["rows"][i]["c"][0]["v"] +
+              '</td><td>' + json["table"]["rows"][i]["c"][1]["v"] +
+              '</td><td>' + json["table"]["rows"][i]["c"][2]["v"] +
+              '</td><td>' + json["table"]["rows"][i]["c"][3]["v"] +
+              '</td><td>' + json["table"]["rows"][i]["c"][4]["v"] +
+              '</td><td>' + json["table"]["rows"][i]["c"][5]["v"] +
+              '</td><td>' + json["table"]["rows"][i]["c"][6]["v"] +
+              '</td><td>' + json["table"]["rows"][i]["c"][9]["v"] +
+              '</td><td>' + json["table"]["rows"][i]["c"][10]["v"] +
+              '</td></tr>'
+              ;
           }
-          bar_color.push(color)
-        }
+          $('#tableContent').html(trHTML);
+          var trHTML = '';
 
-        // Converting Json Object to JavaScript Array
-        for (var j in carJsonDataObject) {
-          graph_arr.push([carJsonDataObject[j].OderID, carJsonDataObject[j].TimeTaken, bar_color[j]]);
-        }
-
-        var graphArray_Final = google.visualization.arrayToDataTable(graph_arr);
-
-        var chart_data = new google.visualization.DataView(graphArray_Final);
-
-        var options = {
-          title: 'Time Taken for items to be Shipped',
-          hAxis: { title: 'Order ID' },
-          vAxis: { title: 'Time Taken (s)' },
-          legend: { position: "none" },
-        };
-        var chart = new google.visualization.ColumnChart(document.getElementById('column_chart'));
-        chart.draw(chart_data, options);
-
-        var trHTML = '';
-        for (var i = 0; i <=8 ; ++i) {
-          var num = i + 1
-          var myData_map, myData_order;
-
-          trHTML += '<tr><th scope="row">' + num +
-            '</th><td>' + json["table"]["rows"][i]["c"][0]["v"] +
-            '</td><td>' + json["table"]["rows"][i]["c"][1]["v"] +
-            '</td><td>' + json["table"]["rows"][i]["c"][2]["v"] +
-            '</td><td>' + json["table"]["rows"][i]["c"][3]["v"] +
-            '</td><td>' + json["table"]["rows"][i]["c"][4]["v"] +
-            '</td><td>' + json["table"]["rows"][i]["c"][5]["v"] +
-            '</td><td>' + json["table"]["rows"][i]["c"][6]["v"] +
-            '</td><td>' + json["table"]["rows"][i]["c"][9]["v"] +
-            '</td><td>' + json["table"]["rows"][i]["c"][10]["v"] +
-            '</td></tr>'
-            ;
-        }
-        $('#tableContent').html(trHTML);
-        var trHTML = '';
-
-      });
+        });
     }
 
   </script>
