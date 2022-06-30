@@ -171,15 +171,11 @@
     <div id="dashboard" class="container-fluid">
       <div style="background-color: rgb(156, 159, 161);" class="row">
         <div class="col-sm-12 col-md-6 col-lg-6 position-relative">
-          <h2 style="padding-top: 20px; padding-bottom: 18px;" class="text-center">Incoming Orders</h2>
-
-          <div id="map" style="height: 377px;width: auto; border-style: solid; " class="m-4">
-
-          </div>
-
+          <h2 style="padding-top: 20px;" class="text-center">Incoming Orders</h2>
+          <div id="map" style="height: 377px;width: auto; border-style: solid; " class="m-4"></div>
         </div>
 
-        <div class="col-sm-12 col-md-6 col-lg-6">
+        <div class="col-sm-12 col-md-6 col-lg-6 position-relative">
           <h2 style="padding-top: 20px;" class="text-center">Order Processing Time</h2>
           <div id="column_chart" style=" height: 380px;border-style: solid;"
             class="m-4 shadow-lg mb-5 bg-white rounded"></div>
@@ -322,6 +318,7 @@
       fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=Dashboard`)
         .then(res => res.text())
         .then(text => {
+          console.log(text);
           const json = JSON.parse(text.substr(47).slice(0, -2))
 
           let count = json["table"]["rows"].length;
